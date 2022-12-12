@@ -1,0 +1,17 @@
+#kof {
+    width: 80%;
+    height: 85%;
+    /* width: 100vw;
+    height: 100vh; */
+    background-image: url("/static/images/background/0.gif");
+    background-size: 100% 100%;
+
+}
+
+.window {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
