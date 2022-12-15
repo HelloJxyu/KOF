@@ -25,6 +25,9 @@ export class Player extends AcGameObject {
 
         this.animations = new Map();
         this.frame_current_cnt = 0;
+        this.hp = 100;
+        this.$hp_lightgreen = this.root.$kof.find(`.kof-head>.kof-head-hp-${this.id}>div>div`);
+        this.$hp_red = $(`#kof>.kof-head>.kof-head-hp-${this.id}>div`);
     }
 
     start() {
@@ -35,10 +38,80 @@ export class Player extends AcGameObject {
         this.update_control();
         this.update_move();
         this.updata_direction();
+        this.update_attack();
         this.render();
     }
 
+    is_collision(r1, r2) {
+        if (Math.max(r1.x1, r2.x1) > Math.min(r1.x2, r2.x2)) {
+            return false;
+        }
+        if (Math.max(r1.y1, r2.y1) > Math.min(r1.y2, r2.y2)) {
+            return false;
+        }
+        return true;
+    }
+
+    is_attack() {
+        if (this.status === 6) {
+            return;
+        }
+        this.status = 5;
+        this.frame_current_cnt = 0;
+        this.hp -= 20;
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
+        if (this.hp === 0) {
+            this.status = 6;
+        }
+
+        this.$hp_lightgreen.animate({
+            width: this.$hp_red.parent().width() * this.hp / 100
+        }, 300);
+
+        this.$hp_red.animate({
+            width: this.$hp_red.parent().width() * this.hp / 100
+        }, 500);
+
+        // this.$hp.width();
+    }
+
+    update_attack() {
+        if (this.status === 4 && this.frame_current_cnt === 18) {
+            let you = this.root.players[1 - this.id];
+            let r1, r2;
+            if (this.direction > 0) {
+                r1 = {
+                    x1: this.x + this.width,
+                    y1: this.y + 40,
+                    x2: this.x + this.width + 100,
+                    y2: this.y + 40 + 20
+                };
+            } else {
+                r1 = {
+                    x1: this.x - 100,
+                    y1: this.y + 40,
+                    x2: this.x,
+                    y2: this.y + 40 + 20
+                };
+            }
+            r2 = {
+                x1: you.x,
+                y1: you.y,
+                x2: you.x + you.width,
+                y2: you.y + you.height
+            };
+            if (this.is_collision(r1, r2)) {
+                you.is_attack();
+            }
+        }
+    }
+
     updata_direction() {
+        if (this.status === 6) {
+            return;
+        }
         let players = this.root.players;
         if (players[0] && players[1]) {
             let me = this, you = players[1 - this.id];
@@ -93,16 +166,17 @@ export class Player extends AcGameObject {
     }
 
     update_move() {
-        if (this.status === 3) {
-            this.vy += this.grivaty;
-        }
+        this.vy += this.grivaty;
         this.x += this.vx * this.timedelate / 1000;
         this.y += this.vy * this.timedelate / 1000;
         if (this.y > 450) {
             this.y = 450;
             this.vy = 0;
             this.vx = 0;
-            this.status = 0;
+            if (this.status === 3) {
+                this.status = 0;
+            }
+
         }
         if (this.x < 0) {
             this.x = 0;
@@ -113,6 +187,7 @@ export class Player extends AcGameObject {
 
     render() {
         let status = this.status;
+
         if (this.status === 1 && this.direction * this.vx < 0) {
             status = 2;
         }
@@ -132,9 +207,13 @@ export class Player extends AcGameObject {
                 this.ctx.restore();
             }
             this.frame_current_cnt++;
-            if (status === 4) {
+            if (status === 4 || status === 5 || status === 6) {
                 if (this.frame_current_cnt === obj.frame_cnt * obj.frame_rate) {
-                    this.status = 0;
+                    if (status != 6) {
+                        this.status = 0;
+                    } else {
+                        this.frame_current_cnt--;
+                    }
                 }
             }
         }
