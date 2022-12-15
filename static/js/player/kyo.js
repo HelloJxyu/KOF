@@ -12,7 +12,7 @@ export class Kyo extends Player {
         let off_set = [0, -22, -22, -140, 0, 0, 0];
         for (let i = 0; i < 7; i++) {
             let gif = GIF();
-            if (i == 0) {
+            if (i === 0) {
                 gif.load(`https://s2.loli.net/2022/12/15/f17bnRVKXlsJvUQ.gif`);
             } else if (i === 1) {
                 gif.load(`https://s2.loli.net/2022/12/15/yGja1lIW3DzwVTx.gif`);
